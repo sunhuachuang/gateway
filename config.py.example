@@ -1,4 +1,4 @@
 mail_host = 'smtp.qq.com'
 mail_user = 'xxx@qq.com'
 mail_password = 'xxx'
-mail_gate_user = 'xxx@xx.com'
+mail_subject = 'VPN Gate Daily Mirror URLs'
