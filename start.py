@@ -98,6 +98,13 @@ def main():
     best_server, good_servers = get_good_servers(servers)
     save_servers_to_bak(good_servers)
 
+    best_server_len = len(best_server)
+    best_server_len = best_server_len if best_server_len % 2 == 0 else best_server_len + 1
+    print('*'*(best_server_len+17))
+    print('*'*int(best_server_len/2) + 'your best gateway' + '*'*int(best_server_len/2))
+    print('*'*6 + '  ' + best_server + '  ' + '*'*7)
+    print('*'*(best_server_len+17))
+
     # connect best server.
 
     # change network config.
