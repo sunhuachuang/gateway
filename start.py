@@ -61,7 +61,7 @@ def single_server_ping(server, time_re, queue):
         print(server + ' is ok!')
         queue.put((server, time_out))
 
-def get_best_server(servers):
+def get_good_servers(servers):
     good_servers = []
     num = len(servers)
     time_re = re.compile(r'time=(\d+)')
@@ -75,6 +75,7 @@ def get_best_server(servers):
 
     p.close()
     p.join()
+
     for i in range(num):
         try:
             good_servers.append(queue.get_nowait())
@@ -94,7 +95,7 @@ def main():
     bak_servers = get_servers_from_bak()
     servers = new_servers + [bak_server for bak_server in bak_servers if bak_server not in new_servers]
 
-    best_server, good_servers = get_best_server(servers)
+    best_server, good_servers = get_good_servers(servers)
     save_servers_to_bak(good_servers)
 
     # connect best server.
