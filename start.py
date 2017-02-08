@@ -6,6 +6,9 @@ except ImportError:
 import re
 import poplib
 from email.parser import Parser
+from multiprocessing import Pool, Manager
+from queue import Empty
+import subprocess
 
 def get_servers_from_bak():
     with open('servers.bak') as f:
@@ -14,7 +17,7 @@ def get_servers_from_bak():
     return [x.strip() for x in content]
 
 def save_servers_to_bak(servers):
-    with open('servers.bak', 'w') as f:
+    with open('servers.bak', 'w+') as f:
         for server in servers:
             f.write(server + "\n")
 
@@ -45,17 +48,48 @@ def get_servers_from_email():
         print('no email from VPN Gate')
         exit(1)
 
-    url_re = re.compile(r'http:\/\/([^\s]+):\d+\/')
+    url_re = re.compile(r'http:\/\/[^\s]+:\d+\/')
 
     return url_re.findall(lastest_mail.get_payload())
 
-def single_server_ping():
-    pass
+def single_server_ping(server, time_re, queue):
+    port_point = server.rfind(':')
+    server_ping = server[7:port_point]
+
+    ping_response = subprocess.Popen(["/bin/ping", "-c1", server_ping], stdout=subprocess.PIPE).stdout.read()
+    time_out = time_re.findall(ping_response.decode('utf-8'))[0]
+
+    if time_out:
+        print(server + ' is ok!')
+        queue.put((server, time_out))
 
 def get_best_server(servers):
-    best_server = ''
+    good_servers = []
+    num = len(servers)
+    time_re = re.compile(r'time=(\d+)')
 
-    return best_server, servers
+    p = Pool(num)
+    manager = Manager()
+    queue = manager.Queue()
+
+    for i in range(num):
+        p.apply_async(single_server_ping, (servers[i], time_re, queue))
+
+    p.close()
+    p.join()
+    for i in range(num):
+        try:
+            good_servers.append(queue.get_nowait())
+        except Empty:
+            break
+
+    if good_servers:
+        sorted_servers = sorted(good_servers, key=lambda v: int(v[1]))
+        last_servers = list(map(lambda v: v[0], sorted_servers))
+        return last_servers[0], last_servers
+    else:
+        print('all servers is failure!!!')
+        exit(1)
 
 def main():
     new_servers = get_servers_from_email()
