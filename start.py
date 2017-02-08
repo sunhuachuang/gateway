@@ -45,7 +45,7 @@ def get_servers_from_email():
         print('no email from VPN Gate')
         exit(1)
 
-    url_re = re.compile(r'http:\/\/[^\s]+:\d+\/')
+    url_re = re.compile(r'http:\/\/([^\s]+):\d+\/')
 
     return url_re.findall(lastest_mail.get_payload())
 
