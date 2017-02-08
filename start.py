@@ -3,12 +3,10 @@ try:
 except ImportError:
     print('copy config.py.exmaple to config.py and change mail to yourself.')
 
-import re
-import poplib
+import re, poplib, subprocess
 from email.parser import Parser
 from multiprocessing import Pool, Manager
 from queue import Empty
-import subprocess
 
 def get_servers_from_bak():
     with open('servers.bak') as f:
