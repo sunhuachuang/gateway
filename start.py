@@ -7,17 +7,16 @@ import re
 import poplib
 from email.parser import Parser
 
-best_server = '0.0.0.0'
-servers = []
-
 def get_servers_from_bak():
     with open('servers.bak') as f:
         content = f.readlines()
 
     return [x.strip() for x in content]
 
-def save_servers_to_bak():
-    pass
+def save_servers_to_bak(servers):
+    with open('servers.bak', 'w') as f:
+        for server in servers:
+            f.write(server + "\n")
 
 def get_servers_from_email():
     pop_conn = poplib.POP3_SSL(mail_host)
@@ -50,13 +49,21 @@ def get_servers_from_email():
 
     return url_re.findall(lastest_mail.get_payload())
 
+def single_server_ping():
+    pass
+
+def get_best_server(servers):
+    best_server = ''
+
+    return best_server, servers
+
 def main():
     new_servers = get_servers_from_email()
     bak_servers = get_servers_from_bak()
-    servers = new_servers + [url for bak_server in bak_servers if bak_server not in new_servers]
-    #print(servers)
+    servers = new_servers + [bak_server for bak_server in bak_servers if bak_server not in new_servers]
 
-    # test which server is best.
+    best_server, good_servers = get_best_server(servers)
+    save_servers_to_bak(good_servers)
 
     # connect best server.
 
